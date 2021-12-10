@@ -52,7 +52,7 @@ $factor = 2560/1920;
 	//	3060,1721);  // source size (w,h)
 
 	shadowstring($new, 1580*$factor,1060*$factor, dstr($src));
-	$overlayfile = $_SERVER['HOME']."/iphonepics/sfs-logo-beveled.png";
+	$overlayfile = "/opt/webcam/sfs-logo-beveled.png";
 	echo $overlayfile;
 	$item = imagecreatefrompng($overlayfile);
 	imagealphablending($item,true);
