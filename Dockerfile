@@ -11,7 +11,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-install mysqli
 
-RUN ln -s /usr/local/bin/php /usr/bin/php
 
 RUN apt-get install -y ttf-mscorefonts-installer
 RUN apt-get install -y imagemagick
@@ -22,6 +21,7 @@ RUN apt-get install -y exiftool
 RUN ln -fs /usr/share/zoneinfo/America/Chicago /etc/localtime
 RUN dpkg-reconfigure --frontend noninteractive tzdata
 
+RUN ln -s /usr/local/bin/php /usr/bin/php
 
 COPY . .
 RUN ./mkphptz.sh
