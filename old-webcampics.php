@@ -1,8 +1,5 @@
 #!/usr/bin/php
 <?php
-ini_set("memory_limit",'256M');
-
-
 umask(002);
 $factor = 2560 / 1920;
 
@@ -57,7 +54,7 @@ function stampfile($src_filename, $dest_filename)
 	// 	int $src_w , int $src_h ) 
 	$imageparams = json_decode(file_get_contents("/opt/webcam/imageparams.json"));
 	print_r($imageparams);
-	//$rot_im = imagerotate($raw_source_image, $imageparams->rot_d,0);
+	//$rot_im = imagerotate($rw_source_image, $imageparams->rot_d);
 	//$new_image = $rot_im;
 	imagecopyresampled(
 		$new_image,
@@ -138,42 +135,38 @@ function process_one_file($filename) {
 	echo "unlink($filename)\n";
 	unlink("staging/$filename");
 	$imglink = "currentlink.jpg";
-	$linkit = false;
 	if (file_exists($imglink)) {
-		$linkit = false;
 		$imgtruepath = realpath($imglink);
 		$linkname = basename($imgtruepath);
 		$thisname = basename($stampedfile);
-		$linkit = $thisname > $linkname;
-	} else {
-		$linkit = true;
-	}
-	if ($linkit) {
-		echo "YES!\n";
-		chdir ("/opt/webcam");
-		// we are newer!
-		// proceed to install link to the file that we just processed
-		
-		// It is VERY IMPORTANT that the new link
-		// be installed using a filesystem rename() call
-		// because in many filesystems the 'move' or 'rename'
-		// system call is guaranteed to be ATOMIC on the filesystem.
-		// This means that no other tasks or threads can mess it up,
-		// which is important so that this system can be as threadsafe
-		// as possible.
+		echo "$thisname > $linkname ?\n";
+		if ($thisname > $linkname) {
+			echo "YES!\n";
+			chdir ("/opt/webcam");
+			// we are newer!
+			// proceed to install link to the file that we just processed
+			
+			// It is VERY IMPORTANT that the new link
+			// be installed using a filesystem rename() call
+			// because in many filesystems the 'move' or 'rename'
+			// system call is guaranteed to be ATOMIC on the filesystem.
+			// This means that no other tasks or threads can mess it up,
+			// which is important so that this system can be as threadsafe
+			// as possible.
 
-		// -- make sure there's no 'newlink.jpg' left over from a crash
-		echo "rm -f newlink.jpg";
-		system("rm -f newlink.jpg");
+			// -- make sure there's no 'newlink.jpg' left over from a crash
+			echo "rm -f newlink.jpg";
+			system("rm -f newlink.jpg");
 
-		// -- prepare link command
-		$linkresult = symlink($stampedfile, "newlink.jpg");
+			// -- prepare link command
+			$linkresult = symlink($stampedfile, "newlink.jpg");
 
-		// -- if symlink succeeded then
-		if ($linkresult === true) {
-			// -- do a likely atomic rename of the newlink.jpg
-			// -- over to currentlink.jpg
-			$mvresult = rename("newlink.jpg","currentlink.jpg");
+			// -- if symlink succeeded then
+			if ($linkresult !== FALSE) {
+				// -- do a likely atomic rename of the newlink.jpg
+				// -- over to currentlink.jpg
+				$mvresult = rename("newlink.jpg","currentlink.jpg");
+			}
 		}
 	}
 }
@@ -210,8 +203,9 @@ if (lock_files() != 0) {
 
 while (TRUE) {
 	sleep(0.1);
-	//echo ("cd /opt/webcam/staging\n");
-	chdir("/opt/webcam");
+	echo ("cd /opt/webcam/staging\n");
+	chdir("/opt/webcam/staging");
+	echo getcwd()+"\n";
 
 	// JUST HANDLE MOST RECENT FILE FIRST
 	// in "catchup" scenarios it helps current user experience
@@ -370,4 +364,4 @@ exit(0);
 	if ($year == "") usleep(50000);
 }
 
-*/
+ */
