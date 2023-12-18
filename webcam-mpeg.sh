@@ -9,6 +9,8 @@ fi
 HOMEDIR=/opt/webcam/tl
 lockfile-create --use-pid --retry 0 /dev/shm/iphonempeg-processing$DIGITS || exit 1
 MOVIEDEST=/opt/webcam/outbox
+MOVIEDEST2=/opt/webcam/sent
+MOVIETRASH=/opt/webcam/trash
 mkdir -p $MOVIEDEST
 cd $HOMEDIR
 # cleanout leftover tempfiles overlasting oneday
@@ -35,7 +37,8 @@ for f in */*/*/{[0-9][$DIGITS],fullday}; do
 			continue
 		fi
 		cd $HOMEDIR/$f
-		if [ ! -f $MOVIEDEST/$movie.mp4 ]; then
+		if [ ! -f "$MOVIEDEST/$movie.mp4" -a ! -f "$MOVIEDEST2/$movie.mp4" \
+		       -a ! -f "$MOVIEDEST/${movie}-uploading.mp4" ]; then
 			jpgs=`echo 20*_???.jpg`
 			echo $jpgs
 			if [ "$jpgs" = "" ]; then
@@ -60,9 +63,11 @@ for f in */*/*/{[0-9][$DIGITS],fullday}; do
 			cat $jpgs > $MOVIEDEST/$movie.mjpg
 
 			# /tmp/movie.mjpg => /tmp/movie.mp4
-		        ffmpeg -f mjpeg -i "$MOVIEDEST/$movie.mjpg" -s 1920x1080 -q:v 0 -y -vcodec mjpeg "$MOVIEDEST/$movie.mp4"
+		        ffmpeg -f mjpeg -i "$MOVIEDEST/$movie.mjpg" -s 1920x1080 -q:v 0 -y -vcodec mjpeg "$MOVIEDEST/_proc_$movie.mp4"
 
 			if [ "$?" == "0" ]; then
+				mv "$MOVIEDEST/_proc_$movie.mp4" "$MOVIEDEST/$movie.mp4"
+				mv "$MOVIEDEST/$movie.mjpg" "$MOVIETRASH"
 				echo -n ""
 			else
 				echo "*** FFMPEG ERROR processing >$movie< ***"

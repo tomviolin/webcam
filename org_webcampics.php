@@ -123,10 +123,8 @@ function stampfile($src_filename, $dest_filename)
 	imagedestroy($raw_source_image);
 	$dt = exifdate_from_filename($src_filename);
 	echo "$dt\n";
-	system("exiftool -TagsFromFile \"staging/$src_filename\" -all:all'>'all:all -EXIF:all'>'EXIF:all -IPTC:all'>'IPTC:all -XMP:all'>'XMP:all \"$dest_filename\"");
-	//-all:all'>'all:all -EXIF:all'>'EXIF:all -IPTC:all'>'IPTC:all' -XMP:all'>'XMP:all'
+	system("exiftool -TagsFromFile \"staging/$src_filename\" \"-all:all-=all:all\" \"$dest_filename\"");
 	system("exiftool -'ModifyDate'='$dt' $dest_filename");
-	system("rm ".$dest_filename."_original");
 }
 
 function stage_to_tl_name($filename) {
@@ -142,7 +140,7 @@ function process_one_file($filename) {
 	print("==process_one_file($filename)\n");
 	$stampedfile = stage_to_tl_name($filename);
 	$stampedfiledir = dirname($stampedfile);
-	@mkdir($stampedfiledir, 0775, true);
+	@mkdir($stampedfiledir, 0755, true);
 	if (!file_exists($stampedfile)) {
 		stampfile($filename, $stampedfile);
 	}
@@ -223,7 +221,7 @@ if (lock_files() != 0) {
 
 
 while (TRUE) {
-	sleep(0.1);
+	sleep(0.5);
 	//echo ("cd /opt/webcam/staging\n");
 	chdir("/opt/webcam");
 
